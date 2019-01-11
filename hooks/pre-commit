@@ -66,15 +66,39 @@ update_copyright() {
   done
 }
 
+# Increment the revision of the semantic version
+increment_version() {
+  local file="$1"     # target version file to read from
+  local regex="$2"    # regex for version must include before and after pieces
+
+  # If target exists read line by line and check for match
+  if [ -f "$file" ]; then
+    local original=     # original line
+
+    # Capture version
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      if [[ "$line" =~ $regex ]]; then
+        original="$line"
+        break
+      fi
+    done < "$file"
+
+    # Increment the revision portion of the version
+    IFS=. read major minor rev <<< ${BASH_REMATCH[2]}
+    ((rev++))
+    ver="$major.$minor.$rev"
+    updated="${BASH_REMATCH[1]}$ver${BASH_REMATCH[3]}"
+
+    # Write out the changes to the file and stage
+    sed -i -e "s/$original/$updated/" "$file"
+    git add "$file"
+    echo "Version: $updated"
+  fi
+}
+
 # Update copyrights and increment version
 # Note: the cwd is always the full path of your project root
 update_copyright 'Copyright \(c\)'
-
-# Increment revision of version
-#ver_file = 'profiles/base.yml'
-#ver_regx = /\s*release:\s*(\d+\.\d+\.\d+).*/
-#ver = FileUtils.inc_version(ver_file, ver_regx)
-#`git add #{ver_file}`
-#puts("Version: #{ver}")
+increment_version 'version' '(.*)([0-9]+\.[0-9]+\.[0-9]+)(.*)'
 
 # vim: ts=2:sw=2:sts=2
