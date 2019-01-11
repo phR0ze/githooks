@@ -60,7 +60,7 @@ update_copyright() {
       # Update target file
       if [ "x$updated" != "x" ]; then
         sed -i -e "s/$original/$updated/" "$x"
-        #git add "$x"
+        git add "$x"
       fi
     fi
   done
