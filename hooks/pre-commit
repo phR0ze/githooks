@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MIT License
-#Copyright (c) 2017 phR0ze
+#Copyright (c) 2017-2019 phR0ze
 #
 #Permission is hereby granted, free of charge, to any person obtaining a copy
 #of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@ update_copyright() {
             updated="${BASH_REMATCH[1]} ${BASH_REMATCH[2]}-${year}${BASH_REMATCH[4]}"
             original="$line"
           fi
+          break
         fi
 
         # Handle single year
@@ -59,7 +60,7 @@ update_copyright() {
       # Update target file
       if [ "x$updated" != "x" ]; then
         sed -i -e "s/$original/$updated/" "$x"
-        # `git add #{path}` if FileUtils.update_copyright(path, "Copyright (c)")
+        #git add "$x"
       fi
     fi
   done
