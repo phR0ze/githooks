@@ -65,7 +65,7 @@ prepend(){
 # Note: the cwd is always the full path of your project root
 msgfile="$1"
 
-ver_regx='[[:space:]]*release:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*'
+ver_regx='^([0-9]+\.[0-9]+\.[0-9]+)$'
 version 'version' "$ver_regx" ver
 
 msg_regx='[0-9]+\.[0-9]+\.[0-9]+:[[:space:]]*(.*)'
