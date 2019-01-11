@@ -30,6 +30,8 @@ update_copyright() {
 
     # Only update copyright if its an ASCII file
     if [[ "$(file $x)" == *"ASCII text"* ]]; then
+      local updated=
+      local original=
 
       # Check copyright and update if required
       while IFS= read -r line || [[ -n "$line" ]]; do
@@ -38,7 +40,8 @@ update_copyright() {
         local regex="(.*$copyright)[[:space:]]*([0-9]{4})-([0-9]{4})(.*)"
         if [[ "$line" =~ $regex ]]; then
           if [ "${BASH_REMATCH[3]}" != "$year" ]; then
-            echo "${BASH_REMATCH[1]} ${BASH_REMATCH[2]}-${year}${BASH_REMATCH[4]}"
+            updated="${BASH_REMATCH[1]} ${BASH_REMATCH[2]}-${year}${BASH_REMATCH[4]}"
+            original="$line"
           fi
         fi
 
@@ -46,13 +49,18 @@ update_copyright() {
         local regex="(.*$copyright)[[:space:]]*([0-9]{4})(.*)"
         if [[ "$line" =~ $regex ]]; then
           if [ "${BASH_REMATCH[2]}" != "$year" ]; then
-            echo "${BASH_REMATCH[1]} ${BASH_REMATCH[2]}-${year}${BASH_REMATCH[3]}"
+            updated="${BASH_REMATCH[1]} ${BASH_REMATCH[2]}-${year}${BASH_REMATCH[3]}"
+            original="$line"
           fi
           break
         fi
-
-        # `git add #{path}` if FileUtils.update_copyright(path, "Copyright (c)")
       done < "$x"
+
+      # Update target file
+      if [ "x$updated" != "x" ]; then
+        sed -i -e "s/$original/$updated/" "$x"
+        # `git add #{path}` if FileUtils.update_copyright(path, "Copyright (c)")
+      fi
     fi
   done
 }
