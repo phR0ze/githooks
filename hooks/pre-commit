@@ -1,44 +1,71 @@
-##!/usr/bin/env bash
-##MIT License
-##Copyright (c) 2017-2019 phR0ze
-##
-##Permission is hereby granted, free of charge, to any person obtaining a copy
-##of this software and associated documentation files (the "Software"), to deal
-##in the Software without restriction, including without limitation the rights
-##to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-##copies of the Software, and to permit persons to whom the Software is
-##furnished to do so, subject to the following conditions:
-##
-##The above copyright notice and this permission notice shall be included in all
-##copies or substantial portions of the Software.
-##
-##THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-##IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-##FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-##AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-##LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-##OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-##SOFTWARE.
+#!/usr/bin/env bash
+#MIT License
+#Copyright (c) 2017 phR0ze
 #
-## Update copyright in changed ASCII files
-#update_copyright() {
-#  pwd
-#  #files=$(git diff --cached --name-only --diff-filter=d)
-#  #`git diff --cached --name-only --diff-filter=d`.split(' ').each{|path|
-#  #  if `file #{path}`.include?("ASCII text")
-#  #    `git add #{path}` if FileUtils.update_copyright(path, "Copyright (c)")
-#  #  end
-#  #}
-#}
+#Permission is hereby granted, free of charge, to any person obtaining a copy
+#of this software and associated documentation files (the "Software"), to deal
+#in the Software without restriction, including without limitation the rights
+#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#copies of the Software, and to permit persons to whom the Software is
+#furnished to do so, subject to the following conditions:
 #
-## Update copyrights and increment version
-#update_copyright
+#The above copyright notice and this permission notice shall be included in all
+#copies or substantial portions of the Software.
 #
-## Increment revision of version
-##ver_file = 'profiles/base.yml'
-##ver_regx = /\s*release:\s*(\d+\.\d+\.\d+).*/
-##ver = FileUtils.inc_version(ver_file, ver_regx)
-##`git add #{ver_file}`
-##puts("Version: #{ver}")
-#
-## vim: ts=2:sw=2:sts=2
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#SOFTWARE.
+
+# Update copyright in changed ASCII files
+update_copyright() {
+  local copyright="$1"        # regex escaped string to use for copyright pattern
+  local year=$(date +"%Y")    # current year to use for copyright updates
+
+  files=$(git diff --cached --name-only --diff-filter=d)
+  for x in $files; do
+
+    # Only update copyright if its an ASCII file
+    if [[ "$(file $x)" == *"ASCII text"* ]]; then
+
+      # Check copyright and update if required
+      while IFS= read -r line || [[ -n "$line" ]]; do
+
+        # Handle year range
+        local regex="(.*$copyright)[[:space:]]*([0-9]{4})-([0-9]{4})(.*)"
+        if [[ "$line" =~ $regex ]]; then
+          if [ "${BASH_REMATCH[3]}" != "$year" ]; then
+            echo "${BASH_REMATCH[1]} ${BASH_REMATCH[2]}-${year}${BASH_REMATCH[4]}"
+          fi
+        fi
+
+        # Handle single year
+        local regex="(.*$copyright)[[:space:]]*([0-9]{4})(.*)"
+        if [[ "$line" =~ $regex ]]; then
+          if [ "${BASH_REMATCH[2]}" != "$year" ]; then
+            echo "${BASH_REMATCH[1]} ${BASH_REMATCH[2]}-${year}${BASH_REMATCH[3]}"
+          fi
+          break
+        fi
+
+        # `git add #{path}` if FileUtils.update_copyright(path, "Copyright (c)")
+      done < "$x"
+    fi
+  done
+}
+
+# Update copyrights and increment version
+# Note: the cwd is always the full path of your project root
+update_copyright 'Copyright \(c\)'
+
+# Increment revision of version
+#ver_file = 'profiles/base.yml'
+#ver_regx = /\s*release:\s*(\d+\.\d+\.\d+).*/
+#ver = FileUtils.inc_version(ver_file, ver_regx)
+#`git add #{ver_file}`
+#puts("Version: #{ver}")
+
+# vim: ts=2:sw=2:sts=2
