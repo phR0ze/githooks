@@ -20,6 +20,12 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
+# Work around for darwin's different sed behavior
+SED="sed -i"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  SED="sed -i ''"
+fi
+
 # Read target file and capture Sem Version string and set result
 get_version() {
   local file="$1"     # target version file to read from
@@ -61,7 +67,6 @@ prepend_version(){
   fi
 }
 
-# vim: ts=2:sw=2:sts=2
 # Update copyright in changed ASCII files
 update_copyright() {
   local copyright="$1"        # regex escaped string to use for copyright pattern
@@ -101,7 +106,7 @@ update_copyright() {
 
       # Update target file
       if [ "x$updated" != "x" ]; then
-        sed -i -e "s/$original/$updated/" "$x"
+        $SED -e "s/$original/$updated/" "$x"
         git add "$x"
       fi
     fi
@@ -132,9 +137,9 @@ increment_version() {
     updated="${BASH_REMATCH[1]}$ver${BASH_REMATCH[3]}"
 
     # Write out the changes to the file and stage
-    sed -i -e "s/$original/$updated/" "$file"
+    $SED -e "s/$original/$updated/" "$file"
     git add "$file"
-    echo "Version: $ver"
+    echo "Version: $ver ${file}"
   fi
 }
 
